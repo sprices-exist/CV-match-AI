@@ -6,13 +6,13 @@ import torch
 import pickle
 import numpy as np
 import pandas as pd
-import webbrowser
+
 
 tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
 model = DistilBertModel.from_pretrained('distilbert-base-uncased')
 
 # Load the array into another variable
-with open('array.pkl', 'rb') as file:
+with open('array_1.pkl', 'rb') as file:
     job_desc_embeds_final = pickle.load(file)
 
 def compute_cosine_similarity(embedding1, embedding2):
@@ -46,20 +46,22 @@ def extract_text_from_pdf(file_object, x):
     return text
 
 def cut_unnecessary(input_string):
-    dot_index = input_string.find('.') if ('.' in input_string) or ('\n' in input_string) else 300
+    dot_index = input_string.find('.')
     
-    cut_index = min(dot_index, 300)
-    
+    # Check if dot is within the first 100 characters or if there's a newline character
+    if dot_index < 100 or ('\n' in input_string):
+        cut_index = 300
+    else:
+        cut_index = min(dot_index, 300)
+
     result_string = input_string[:cut_index]
     
     result_string = "\t" + result_string
 
     return result_string
 
-# Example usage
-input_str = "This is a sample string. It has more than 100 characters.\nThis is a new line."
-result = cut_unnecessary(input_str)
-print(result)
+
+
 
 
 def compute_distilBERT_embedding(text):
@@ -76,7 +78,7 @@ def adjust_text_length(input_text):
         adjusted_text = input_text + '0' * (target_length - len(input_text))
     elif len(input_text) > target_length:
         # Remove everything after the target length
-        adjusted_text = input_text[:target_length]
+        adjusted_text = input_text[len(input_text)-target_length:]
     else:
         # Length is already equal to the target length
         adjusted_text = input_text
